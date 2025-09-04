@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import AdoptionForm from "./AdoptionForm.svelte";
     
     interface Dog {
         id: number;
@@ -89,6 +90,9 @@
             <p class="text-slate-400">{dogData.description}</p>
         </div>
     </div>
+    
+    <!-- Include the adoption form -->
+    <AdoptionForm dog={dogData} />
 {:else}
     <div class="bg-slate-800/60 backdrop-blur-sm rounded-xl p-6">
         <p class="text-slate-400">No dog information available</p>
