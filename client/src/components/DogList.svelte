@@ -17,6 +17,8 @@
     let breedFilter: string = 'ALL';
     // When true hide dogs that are adopted
     let hideAdopted = false;
+    // debug helper to show last fetch URL
+    let lastFetchUrl = '';
 
     // derived list of breeds for the dropdown (updated when dogs change)
     $: breeds = Array.from(new Set(dogs.map(d => d.breed).filter(Boolean))).sort();
@@ -24,7 +26,16 @@
     const fetchDogs = async () => {
         loading = true;
         try {
-            const response = await fetch('/api/dogs');
+            // Build query params for server-side filtering
+            const params = new URLSearchParams();
+            if (breedFilter && breedFilter !== 'ALL') params.set('breed', breedFilter);
+            if (hideAdopted) params.set('status', 'Available');
+            const url = params.toString() ? `/api/dogs?${params.toString()}` : '/api/dogs';
+
+            console.log('fetchDogs ->', { breedFilter, hideAdopted, url });
+            lastFetchUrl = url;
+
+            const response = await fetch(url);
             if (response.ok) {
                 dogs = await response.json();
             } else {
@@ -41,23 +52,11 @@
         fetchDogs();
     });
 
-    // Derived filtered list
+    // Derived filtered list: only apply the search client-side. Breed and status filters are applied server-side.
     $: filteredDogs = dogs.filter((d) => {
-        // search by name or breed
         const q = query.trim().toLowerCase();
-        if (q) {
-            const matches = (d.name || '').toLowerCase().includes(q) || (d.breed || '').toLowerCase().includes(q);
-            if (!matches) return false;
-        }
-
-    // status handling: hide adopted when requested
-    const status = (d.status || '').toUpperCase();
-    if (hideAdopted && status === 'ADOPTED') return false;
-
-    // breed filter
-    if (breedFilter !== 'ALL' && (d.breed || '') !== breedFilter) return false;
-
-        return true;
+        if (!q) return true;
+        return (d.name || '').toLowerCase().includes(q) || (d.breed || '').toLowerCase().includes(q);
     });
 
     // small helper to display nicer status text
@@ -93,6 +92,7 @@
             <select
                 id="breed-select"
                 bind:value={breedFilter}
+                on:change={() => fetchDogs()}
                 class="bg-slate-700/60 text-slate-100 rounded-md p-2 border border-slate-600 focus:outline-none"
             >
                 <option value="ALL">All breeds</option>
@@ -102,11 +102,14 @@
             </select>
         </div>
 
-        <div class="mt-3 sm:mt-0 flex items-center gap-2">
-            <input id="hide-adopted" type="checkbox" bind:checked={hideAdopted} class="h-4 w-4 text-blue-500 bg-slate-700/60 border-slate-600 rounded" />
+    <div class="mt-3 sm:mt-0 flex items-center gap-2">
+        <input id="hide-adopted" type="checkbox" bind:checked={hideAdopted} on:change={() => fetchDogs()} class="h-4 w-4 text-blue-500 bg-slate-700/60 border-slate-600 rounded" />
             <label for="hide-adopted" class="text-slate-300 text-sm">Hide adopted dogs</label>
         </div>
     </div>
+
+    <!-- Debug info: last fetch URL and fetched count -->
+    <div class="text-xs text-slate-400 mb-4">Last fetch: {lastFetchUrl} — Dogs fetched: {dogs.length}</div>
 
     {#if loading}
         <!-- loading animation -->

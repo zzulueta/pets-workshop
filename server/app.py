@@ -1,7 +1,8 @@
 import os
 from typing import Dict, List, Any, Optional
-from flask import Flask, jsonify, Response
+from flask import Flask, jsonify, Response, request
 from models import init_db, db, Dog, Breed
+from models.dog import AdoptionStatus
 
 # Get the server directory path
 base_dir: str = os.path.abspath(os.path.dirname(__file__))
@@ -15,15 +16,36 @@ init_db(app)
 
 @app.route('/api/dogs', methods=['GET'])
 def get_dogs() -> Response:
+    # Optional query parameters
+    req_breed: Optional[str] = None
+    req_status: Optional[str] = None
+    if 'breed' in request.args:
+        req_breed = request.args.get('breed')
+    if 'status' in request.args:
+        req_status = request.args.get('status')
+
+    # Start base query
     query = db.session.query(
-        Dog.id, 
-        Dog.name, 
-    Breed.name.label('breed'),
-    Dog.status
+        Dog.id,
+        Dog.name,
+        Breed.name.label('breed'),
+        Dog.status
     ).join(Breed, Dog.breed_id == Breed.id)
-    
+
+    # Apply breed filter if provided (case-sensitive matches breed name)
+    if req_breed:
+        query = query.filter(Breed.name == req_breed)
+
+    # Apply status filter if provided; accept 'Available' or 'Adopted' (case-insensitive)
+    if req_status:
+        s = req_status.strip().lower()
+        if s == 'available':
+            query = query.filter(Dog.status == AdoptionStatus.AVAILABLE)
+        elif s == 'adopted':
+            query = query.filter(Dog.status == AdoptionStatus.ADOPTED)
+
     dogs_query = query.all()
-    
+
     # Convert the result to a list of dictionaries
     dogs_list: List[Dict[str, Any]] = [
         {
@@ -34,7 +56,7 @@ def get_dogs() -> Response:
         }
         for dog in dogs_query
     ]
-    
+
     return jsonify(dogs_list)
 
 @app.route('/api/dogs/<int:id>', methods=['GET'])
