@@ -9,9 +9,8 @@
         description: string;
         gender: string;
         status: 'AVAILABLE' | 'PENDING' | 'ADOPTED';
-    };
+    }
 
-    // Accept either a dog object or a dogId
     export let dog: Dog | undefined = undefined;
     export let dogId = 0;
     
