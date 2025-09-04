@@ -1,7 +1,8 @@
 import os
 from typing import Dict, List, Any, Optional
-from flask import Flask, jsonify, Response
-from models import init_db, db, Dog, Breed
+from flask import Flask, jsonify, Response, request
+from models import init_db, db, Dog, Breed, AdoptionApplication
+from models.dog import AdoptionStatus
 
 # Get the server directory path
 base_dir: str = os.path.abspath(os.path.dirname(__file__))
@@ -64,6 +65,110 @@ def get_dog(id: int) -> tuple[Response, int] | Response:
     }
     
     return jsonify(dog)
+
+@app.route('/api/breeds', methods=['GET'])
+def get_breeds() -> Response:
+    """
+    Retrieves all pet breeds from the database and returns them as a JSON response.
+    Returns:
+        Response: A Flask JSON response containing a list of dictionaries,
+                  each representing a breed with 'id' and 'name' keys.
+    """
+    breeds_query = Breed.query.all()
+    
+    # Convert the result to a list of dictionaries
+    breeds_list: List[Dict[str, Any]] = [
+        {
+            'id': breed.id,
+            'name': breed.name
+        }
+        for breed in breeds_query
+    ]
+    
+    return jsonify(breeds_list)
+
+@app.route('/api/dogs/<int:dog_id>/adopt', methods=['POST'])
+def submit_adoption_application(dog_id: int) -> tuple[Response, int] | Response:
+    """
+    Submit an adoption application for a specific dog.
+    Expects JSON body with: applicant_name, email, phone (optional), message (optional)
+    """
+    try:
+        # Validate that the dog exists
+        dog = Dog.query.get(dog_id)
+        if not dog:
+            return jsonify({"error": "Dog not found"}), 404
+        
+        # Check if dog is available for adoption
+        if dog.status != AdoptionStatus.AVAILABLE:
+            return jsonify({"error": "Dog is not available for adoption"}), 400
+        
+        # Get request data
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "JSON body required"}), 400
+        
+        # Validate required fields
+        required_fields = ['applicant_name', 'email']
+        for field in required_fields:
+            if field not in data or not data[field]:
+                return jsonify({"error": f"{field} is required"}), 400
+        
+        # Create adoption application
+        application = AdoptionApplication(
+            dog_id=dog_id,
+            applicant_name=data['applicant_name'],
+            email=data['email'],
+            phone=data.get('phone'),
+            message=data.get('message')
+        )
+        
+        db.session.add(application)
+        db.session.commit()
+        
+        return jsonify({
+            "message": "Adoption application submitted successfully",
+            "application_id": application.id,
+            "application": application.to_dict()
+        }), 201
+        
+    except ValueError as e:
+        return jsonify({"error": str(e)}), 400
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": "Failed to submit application"}), 500
+
+@app.route('/api/applications', methods=['GET'])
+def get_adoption_applications() -> Response:
+    """
+    Get all adoption applications for shelter staff to review.
+    """
+    try:
+        applications = AdoptionApplication.query.order_by(AdoptionApplication.submitted_at.desc()).all()
+        
+        applications_list: List[Dict[str, Any]] = [
+            app.to_dict() for app in applications
+        ]
+        
+        return jsonify(applications_list)
+        
+    except Exception as e:
+        return jsonify({"error": "Failed to retrieve applications"}), 500
+
+@app.route('/api/applications/<int:application_id>', methods=['GET'])
+def get_adoption_application(application_id: int) -> tuple[Response, int] | Response:
+    """
+    Get a specific adoption application by ID.
+    """
+    try:
+        application = AdoptionApplication.query.get(application_id)
+        if not application:
+            return jsonify({"error": "Application not found"}), 404
+            
+        return jsonify(application.to_dict())
+        
+    except Exception as e:
+        return jsonify({"error": "Failed to retrieve application"}), 500
 
 ## HERE
 
