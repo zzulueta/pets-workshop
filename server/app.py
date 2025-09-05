@@ -16,6 +16,15 @@ init_db(app)
 
 @app.route('/api/dogs', methods=['GET'])
 def get_dogs() -> Response:
+    # Optional query parameters
+    req_breed: Optional[str] = None
+    req_status: Optional[str] = None
+    if 'breed' in request.args:
+        req_breed = request.args.get('breed')
+    if 'status' in request.args:
+        req_status = request.args.get('status')
+
+    # Start base query
     query = db.session.query(
         Dog.id,
         Dog.name,
@@ -26,19 +35,23 @@ def get_dogs() -> Response:
         Dog.status
     ).join(Breed, Dog.breed_id == Breed.id)
 
-    # Get query parameters
-    breed = request.args.get('breed', type=str)
+    # Legacy param support for 'available' and modern 'status'/'breed' filters
     available = request.args.get('available', default=None, type=str)
-
-    # Apply breed filter
-    if breed:
-        query = query.filter(Breed.name == breed)
-
-    # Apply availability filter
     if available is not None:
         if available.lower() == 'true':
-            from models.dog import AdoptionStatus
             query = query.filter(Dog.status == AdoptionStatus.AVAILABLE)
+
+    # Apply breed filter if provided (case-sensitive matches breed name)
+    if req_breed:
+        query = query.filter(Breed.name == req_breed)
+
+    # Apply status filter if provided; accept 'available' or 'adopted' (case-insensitive)
+    if req_status:
+        s = req_status.strip().lower()
+        if s == 'available':
+            query = query.filter(Dog.status == AdoptionStatus.AVAILABLE)
+        elif s == 'adopted':
+            query = query.filter(Dog.status == AdoptionStatus.ADOPTED)
 
     dogs_query = query.all()
 
@@ -48,10 +61,10 @@ def get_dogs() -> Response:
             'id': dog.id,
             'name': dog.name,
             'breed': dog.breed,
-            'age': dog.age,
-            'description': dog.description,
-            'gender': dog.gender,
-            'status': dog.status.value if dog.status else None
+            'age': getattr(dog, 'age', None),
+            'description': getattr(dog, 'description', None),
+            'gender': getattr(dog, 'gender', None),
+            'status': (dog.status.name if getattr(dog, 'status', None) is not None else None)
         }
         for dog in dogs_query
     ]
