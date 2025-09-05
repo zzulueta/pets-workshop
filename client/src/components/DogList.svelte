@@ -18,9 +18,14 @@
     let breeds: Breed[] = [];
     let loading = true;
     let error: string | null = null;
-    let selectedBreed = '';
-    let showOnlyAvailable = false;
+
+    // UI state for filters
     let search = '';
+    let breedFilter: string = 'ALL';
+    // When true hide dogs that are adopted
+    let hideAdopted = false;
+    // debug helper to show last fetch URL
+    let lastFetchUrl = '';
 
     const fetchBreeds = async () => {
         try {
@@ -42,6 +47,7 @@
             error = `Error fetching breeds: ${err instanceof Error ? err.message : String(err)}`;
         }
     };
+
 
     // UI state for filters
     let query = '';
@@ -82,18 +88,21 @@
         }
     };
 
-    // client-side search/filtering - keep reactive variable below
-
     onMount(() => {
         fetchBreeds();
         fetchDogs();
     });
 
-    // Derived filtered list: only apply the search client-side. Breed and status filters are applied server-side.
+    // Compose breed option names but don't override the fetched `breeds` array.
+    $: breedOptions = (breeds && breeds.length)
+        ? breeds.map(b => b.name)
+        : Array.from(new Set(dogs.map(d => d.breed).filter(Boolean))).sort();
+
+    // Derived filtered list used by the template
     $: filteredDogs = dogs.filter((d) => {
-        const q = (query || search).trim().toLowerCase();
-        if (!q) return true;
-        return (d.name || '').toLowerCase().includes(q) || (d.breed || '').toLowerCase().includes(q);
+        const q = (search || '').trim().toLowerCase();
+        if (q && !((d.name || '').toLowerCase().includes(q) || (d.breed || '').toLowerCase().includes(q))) return false;
+        return true;
     });
 
     // small helper to display nicer status text
@@ -121,6 +130,8 @@
                 placeholder="Search by name or breed"
                 bind:value={query}
                 class="w-full bg-white dark:bg-slate-700/60 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 rounded-md p-3 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                bind:value={search}
+                class="w-full bg-slate-700/60 text-slate-100 placeholder-slate-400 rounded-md p-3 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
         </div>
 
@@ -134,6 +145,7 @@
             >
                 <option value="ALL">All breeds</option>
                 {#each displayedBreeds as b}
+                {#each breedOptions as b}
                     <option value={b}>{b}</option>
                 {/each}
             </select>
