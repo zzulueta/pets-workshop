@@ -8,10 +8,8 @@
         status?: string; // e.g. AVAILABLE, ADOPTED, PENDING (from server)
     }
 
-    interface Breed {
-        id: number;
-        name: string;
-    }
+    // Treat breeds as simple string names
+    type Breed = string;
 
     let dogs: Dog[] = [];
     let breeds: Breed[] = [];
@@ -25,7 +23,15 @@
         try {
             const res = await fetch('/api/breeds');
             if (res.ok) {
-                breeds = await res.json();
+                // Normalize server response to an array of breed name strings.
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0 && typeof data[0] === 'object') {
+                    breeds = data.map((b: any) => (b && (b.name || b.id) ? (b.name ?? String(b.id)) : String(b)));
+                } else if (Array.isArray(data)) {
+                    breeds = data.map((b: any) => String(b));
+                } else {
+                    breeds = [];
+                }
             } else {
                 error = `Failed to fetch breeds: ${res.status} ${res.statusText}`;
             }
@@ -42,8 +48,11 @@
     // debug helper to show last fetch URL
     let lastFetchUrl = '';
 
-    // derived list of breeds for the dropdown (updated when dogs change)
-    $: breeds = Array.from(new Set(dogs.map(d => d.breed).filter(Boolean))).sort();
+    // derived list of breeds for the dropdown (fallback when server doesn't provide breeds)
+    $: derivedBreeds = Array.from(new Set(dogs.map(d => d.breed).filter(Boolean))).sort();
+
+    // Which breed list to display: server-provided or derived from fetched dogs
+    $: displayedBreeds = (breeds && breeds.length) ? breeds : derivedBreeds;
 
     const fetchDogs = async () => {
         loading = true;
@@ -70,15 +79,7 @@
         }
     };
 
-    function filteredDogs(): Dog[] {
-        const q = (query || search).trim().toLowerCase();
-        return dogs.filter((d) => {
-            if (q && !((d.name || '').toLowerCase().includes(q) || (d.breed || '').toLowerCase().includes(q))) return false;
-            if ((selectedBreed || breedFilter) && (selectedBreed || breedFilter) !== 'ALL' && d.breed !== (selectedBreed || breedFilter)) return false;
-            // If the backend already filters by availability this check may be redundant.
-            return true;
-        });
-    }
+    // client-side search/filtering - keep reactive variable below
 
     onMount(() => {
         fetchBreeds();
@@ -129,7 +130,7 @@
                 class="bg-slate-700/60 text-slate-100 rounded-md p-2 border border-slate-600 focus:outline-none"
             >
                 <option value="ALL">All breeds</option>
-                {#each breeds as b}
+                {#each displayedBreeds as b}
                     <option value={b}>{b}</option>
                 {/each}
             </select>
