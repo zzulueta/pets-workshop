@@ -48,12 +48,6 @@
     const fetchDogs = async () => {
         loading = true;
         try {
-<<<<<<< HEAD
-            const params = new URLSearchParams();
-            if (selectedBreed) params.append('breed', selectedBreed);
-            if (showOnlyAvailable) params.append('available', 'true');
-            const response = await fetch(`/api/dogs?${params.toString()}`);
-=======
             // Build query params for server-side filtering
             const params = new URLSearchParams();
             if (breedFilter && breedFilter !== 'ALL') params.set('breed', breedFilter);
@@ -64,7 +58,6 @@
             lastFetchUrl = url;
 
             const response = await fetch(url);
->>>>>>> chore/tsconfig-skipLibCheck
             if (response.ok) {
                 dogs = await response.json();
             } else {
@@ -112,46 +105,6 @@
 </script>
 
 <div>
-<<<<<<< HEAD
-    <div class="flex gap-4 mb-6 bg-slate-800/70 backdrop-blur-sm border border-slate-700 rounded-xl p-4">
-        <div class="flex-1">
-            <input
-                type="text"
-                placeholder="Search by dog name..."
-                bind:value={search}
-                class="search-bar mb-3 w-full bg-slate-700 border border-slate-600 text-slate-200 rounded-lg p-2.5"
-            />
-            
-        <div class="mt-2">
-            <label for="breed" class="block text-sm font-medium text-slate-400 mb-2">Breed</label>
-            <select
-                id="breed"
-                bind:value={selectedBreed}
-                class="w-full bg-slate-700 border border-slate-600 text-slate-200 rounded-lg p-2.5"
-                on:change={() => fetchDogs()}
-            >
-                <option value="">All Breeds</option>
-                {#each breeds as breed}
-                    <option value={breed.name}>{breed.name}</option>
-                {/each}
-            </select>
-        </div>
-        </div>
-        <div class="flex items-end">
-            <label class="inline-flex items-center cursor-pointer">
-                <input 
-                    type="checkbox" 
-                    bind:checked={showOnlyAvailable} 
-                    class="form-checkbox h-5 w-5 text-blue-600"
-                    on:change={() => fetchDogs()}
-                />
-                <span class="ml-2 text-slate-400">Available only</span>
-            </label>
-        </div>
-    </div>
-    <h2 class="text-2xl font-medium mb-6 text-slate-100">Available Dogs</h2>
-    
-=======
     <h2 class="text-2xl font-medium mb-4 text-slate-100">Available Dogs</h2>
 
     <!-- Filters: search, dropdown, checkbox -->
@@ -190,8 +143,6 @@
 
     <!-- Debug info: last fetch URL and fetched count -->
     <div class="text-xs text-slate-400 mb-4">Last fetch: {lastFetchUrl} — Dogs fetched: {dogs.length}</div>
-
->>>>>>> chore/tsconfig-skipLibCheck
     {#if loading}
         <!-- loading animation -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -220,15 +171,9 @@
     {:else}
         <!-- dog list -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-<<<<<<< HEAD
-            {#each filteredDogs() as dog (dog.id)}
-                <a 
-                    href={`/dog/${dog.id}`} 
-=======
             {#each filteredDogs as dog (dog.id)}
                 <a
                     href={`/dog/${dog.id}`}
->>>>>>> chore/tsconfig-skipLibCheck
                     class="group block bg-slate-800/60 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg border border-slate-700/50 hover:border-blue-500/50 hover:shadow-blue-500/10 hover:shadow-xl transition-all duration-300 hover:translate-y-[-6px]"
                 >
                     <div class="p-6 relative">

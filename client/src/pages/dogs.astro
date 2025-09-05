@@ -1,18 +1,13 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import DogsList from '../components/DogsList.svelte';
-
-
+---
 ---
 import Layout from '../layouts/Layout.astro';
-import { useState } from 'astro/jsx-runtime';
-import DogFilters from '../components/DogFilters.svelte';
-import DogsList from '../components/DogsList.svelte';
+import DogList from '../components/DogList.svelte';
 ---
 
 <Layout title="Available Dogs">
   <main class="container mx-auto px-4 py-8">
     <h1 class="text-4xl font-bold text-slate-100 mb-8">Available Dogs</h1>
-    <DogsList client:load />
+    <DogList client:load />
   </main>
 </Layout>
