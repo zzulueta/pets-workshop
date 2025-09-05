@@ -17,9 +17,14 @@
     let breeds: Breed[] = [];
     let loading = true;
     let error: string | null = null;
-    let selectedBreed = '';
-    let showOnlyAvailable = false;
+
+    // UI state for filters
     let search = '';
+    let breedFilter: string = 'ALL';
+    // When true hide dogs that are adopted
+    let hideAdopted = false;
+    // debug helper to show last fetch URL
+    let lastFetchUrl = '';
 
     const fetchBreeds = async () => {
         try {
@@ -33,17 +38,6 @@
             error = `Error fetching breeds: ${err instanceof Error ? err.message : String(err)}`;
         }
     };
-
-    // UI state for filters
-    let query = '';
-    let breedFilter: string = 'ALL';
-    // When true hide dogs that are adopted
-    let hideAdopted = false;
-    // debug helper to show last fetch URL
-    let lastFetchUrl = '';
-
-    // derived list of breeds for the dropdown (updated when dogs change)
-    $: breeds = Array.from(new Set(dogs.map(d => d.breed).filter(Boolean))).sort();
 
     const fetchDogs = async () => {
         loading = true;
@@ -70,26 +64,21 @@
         }
     };
 
-    function filteredDogs(): Dog[] {
-        const q = (query || search).trim().toLowerCase();
-        return dogs.filter((d) => {
-            if (q && !((d.name || '').toLowerCase().includes(q) || (d.breed || '').toLowerCase().includes(q))) return false;
-            if ((selectedBreed || breedFilter) && (selectedBreed || breedFilter) !== 'ALL' && d.breed !== (selectedBreed || breedFilter)) return false;
-            // If the backend already filters by availability this check may be redundant.
-            return true;
-        });
-    }
-
     onMount(() => {
         fetchBreeds();
         fetchDogs();
     });
 
-    // Derived filtered list: only apply the search client-side. Breed and status filters are applied server-side.
+    // Compose breed option names but don't override the fetched `breeds` array.
+    $: breedOptions = (breeds && breeds.length)
+        ? breeds.map(b => b.name)
+        : Array.from(new Set(dogs.map(d => d.breed).filter(Boolean))).sort();
+
+    // Derived filtered list used by the template
     $: filteredDogs = dogs.filter((d) => {
-        const q = (query || search).trim().toLowerCase();
-        if (!q) return true;
-        return (d.name || '').toLowerCase().includes(q) || (d.breed || '').toLowerCase().includes(q);
+        const q = (search || '').trim().toLowerCase();
+        if (q && !((d.name || '').toLowerCase().includes(q) || (d.breed || '').toLowerCase().includes(q))) return false;
+        return true;
     });
 
     // small helper to display nicer status text
@@ -115,7 +104,7 @@
                 id="dog-search"
                 type="search"
                 placeholder="Search by name or breed"
-                bind:value={query}
+                bind:value={search}
                 class="w-full bg-slate-700/60 text-slate-100 placeholder-slate-400 rounded-md p-3 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
         </div>
@@ -129,7 +118,7 @@
                 class="bg-slate-700/60 text-slate-100 rounded-md p-2 border border-slate-600 focus:outline-none"
             >
                 <option value="ALL">All breeds</option>
-                {#each breeds as b}
+                {#each breedOptions as b}
                     <option value={b}>{b}</option>
                 {/each}
             </select>
