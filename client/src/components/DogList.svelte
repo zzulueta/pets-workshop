@@ -106,7 +106,7 @@
 </script>
 
 <div>
-    <h2 class="text-2xl font-medium mb-4 text-slate-100">Available Dogs</h2>
+    <h2 class="text-2xl font-medium mb-4 text-slate-900 dark:text-slate-100">Available Dogs</h2>
 
     <!-- Filters: search, dropdown, checkbox -->
     <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:gap-4">
@@ -117,7 +117,7 @@
                 type="search"
                 placeholder="Search by name or breed"
                 bind:value={query}
-                class="w-full bg-slate-700/60 text-slate-100 placeholder-slate-400 rounded-md p-3 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                class="w-full bg-white dark:bg-slate-700/60 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 rounded-md p-3 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
             />
         </div>
 
@@ -127,7 +127,7 @@
                 id="breed-select"
                 bind:value={breedFilter}
                 on:change={() => fetchDogs()}
-                class="bg-slate-700/60 text-slate-100 rounded-md p-2 border border-slate-600 focus:outline-none"
+                class="bg-white dark:bg-slate-700/60 text-slate-900 dark:text-slate-100 rounded-md p-2 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
             >
                 <option value="ALL">All breeds</option>
                 {#each displayedBreeds as b}
@@ -137,23 +137,23 @@
         </div>
 
     <div class="mt-3 sm:mt-0 flex items-center gap-2">
-        <input id="hide-adopted" type="checkbox" bind:checked={hideAdopted} on:change={() => fetchDogs()} class="h-4 w-4 text-blue-500 bg-slate-700/60 border-slate-600 rounded" />
-            <label for="hide-adopted" class="text-slate-300 text-sm">Hide adopted dogs</label>
+        <input id="hide-adopted" type="checkbox" bind:checked={hideAdopted} on:change={() => fetchDogs()} class="h-4 w-4 text-blue-500 bg-white dark:bg-slate-700/60 border-slate-300 dark:border-slate-600 rounded focus:ring-blue-500 dark:focus:ring-blue-400" />
+            <label for="hide-adopted" class="text-slate-600 dark:text-slate-300 text-sm">Hide adopted dogs</label>
         </div>
     </div>
 
     <!-- Debug info: last fetch URL and fetched count -->
-    <div class="text-xs text-slate-400 mb-4">Last fetch: {lastFetchUrl} — Dogs fetched: {dogs.length}</div>
+    <div class="text-xs text-slate-500 dark:text-slate-400 mb-4">Last fetch: {lastFetchUrl} — Dogs fetched: {dogs.length}</div>
     {#if loading}
         <!-- loading animation -->
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {#each Array(6) as _, i}
-                <div class="bg-slate-800/60 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg border border-slate-700/50">
+                <div class="bg-white dark:bg-slate-800/60 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700/50">
                     <div class="p-6">
                         <div class="animate-pulse">
-                            <div class="h-6 bg-slate-700 rounded w-3/4 mb-3"></div>
-                            <div class="h-4 bg-slate-700 rounded w-1/2 mb-4"></div>
-                            <div class="h-4 bg-slate-700 rounded w-1/4 mt-6"></div>
+                            <div class="h-6 bg-slate-300 dark:bg-slate-700 rounded w-3/4 mb-3"></div>
+                            <div class="h-4 bg-slate-300 dark:bg-slate-700 rounded w-1/2 mb-4"></div>
+                            <div class="h-4 bg-slate-300 dark:bg-slate-700 rounded w-1/4 mt-6"></div>
                         </div>
                     </div>
                 </div>
@@ -161,13 +161,13 @@
         </div>
     {:else if error}
         <!-- error display -->
-        <div class="text-center py-12 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700">
-            <p class="text-red-400">{error}</p>
+        <div class="text-center py-12 bg-white dark:bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-700">
+            <p class="text-red-600 dark:text-red-400">{error}</p>
         </div>
     {:else if filteredDogs.length === 0}
         <!-- no dogs found -->
-        <div class="text-center py-12 bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700">
-            <p class="text-slate-300">No dogs match your filters.</p>
+        <div class="text-center py-12 bg-white dark:bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-200 dark:border-slate-700">
+            <p class="text-slate-600 dark:text-slate-300">No dogs match your filters.</p>
         </div>
     {:else}
         <!-- dog list -->
@@ -175,17 +175,17 @@
             {#each filteredDogs as dog (dog.id)}
                 <a
                     href={`/dog/${dog.id}`}
-                    class="group block bg-slate-800/60 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg border border-slate-700/50 hover:border-blue-500/50 hover:shadow-blue-500/10 hover:shadow-xl transition-all duration-300 hover:translate-y-[-6px]"
+                    class="group block bg-white dark:bg-slate-800/60 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700/50 hover:border-blue-500/50 hover:shadow-blue-500/10 hover:shadow-xl transition-all duration-300 hover:translate-y-[-6px]"
                 >
                     <div class="p-6 relative">
                         <div class="absolute inset-0 bg-gradient-to-r from-blue-600/10 to-purple-600/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                         <div class="relative z-10">
-                            <h3 class="text-xl font-semibold text-slate-100 mb-2 group-hover:text-blue-400 transition-colors">{dog.name}</h3>
-                            <p class="text-slate-400 mb-2">{dog.breed}</p>
+                            <h3 class="text-xl font-semibold text-slate-900 dark:text-slate-100 mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{dog.name}</h3>
+                            <p class="text-slate-600 dark:text-slate-400 mb-2">{dog.breed}</p>
                             {#if dog.status}
-                                <p class="text-sm text-slate-400 mb-4">Status: <span class="font-medium text-slate-200">{formatStatus(dog.status)}</span></p>
+                                <p class="text-sm text-slate-600 dark:text-slate-400 mb-4">Status: <span class="font-medium text-slate-800 dark:text-slate-200">{formatStatus(dog.status)}</span></p>
                             {/if}
-                            <div class="mt-4 text-sm text-blue-400 font-medium flex items-center">
+                            <div class="mt-4 text-sm text-blue-600 dark:text-blue-400 font-medium flex items-center">
                                 <span>View details</span>
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1 transform transition-transform duration-300 group-hover:translate-x-2" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M12.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />

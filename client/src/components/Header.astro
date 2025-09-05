@@ -1,5 +1,5 @@
 ---
-// Import any necessary dependencies
+import ThemeToggle from './ThemeToggle.svelte';
 ---
 
 <header class="bg-blue-500 dark:bg-blue-700 text-white p-4 shadow-md transition-colors duration-300">
@@ -19,6 +19,9 @@
         </nav>
       </div>
       <h1 class="text-xl font-bold"><a href="/" class="hover:underline">Tailspin Shelter</a></h1>
+    </div>
+    <div class="flex items-center">
+      <ThemeToggle client:load />
     </div>
   </div>
 </header>
