@@ -5,6 +5,9 @@
         id: number;
         name: string;
         breed: string;
+        age?: number;
+        gender?: string;
+        description?: string;
         status?: string; // e.g. AVAILABLE, ADOPTED, PENDING (from server)
     }
 
