@@ -21,18 +21,18 @@ const { title = "Tailspin Shelter" } = Astro.props;
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-        <script is:inline>
-          // Initialize theme before the page renders to prevent flash
-          (function() {
-            const storedTheme = localStorage.getItem('theme');
-            const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-            const theme = storedTheme || systemTheme;
+                <script is:inline>
+                    // Initialize theme before the page renders to prevent flash
+                    (function() {
+                        const storedTheme = localStorage.getItem('theme');
+                        const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                        const theme = storedTheme || systemTheme;
             
-            if (theme === 'dark') {
-              document.documentElement.classList.add('dark');
-            }
-          })();
-        </script>
+                        if (theme === 'dark') {
+                            document.documentElement.classList.add('dark');
+                        }
+                    })();
+                </script>
     </head>
     <body class="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white transition-colors duration-300 m-0 w-full h-full font-sans">
         <Header />
@@ -58,4 +58,6 @@ const { title = "Tailspin Shelter" } = Astro.props;
         -webkit-font-smoothing: antialiased;
         -moz-osx-font-smoothing: grayscale;
     }
+
+    
 </style>

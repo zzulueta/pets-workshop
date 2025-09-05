@@ -49,14 +49,6 @@
     };
 
 
-    // UI state for filters
-    let query = '';
-    let breedFilter: string = 'ALL';
-    // When true hide dogs that are adopted
-    let hideAdopted = false;
-    // debug helper to show last fetch URL
-    let lastFetchUrl = '';
-
     // derived list of breeds for the dropdown (fallback when server doesn't provide breeds)
     $: derivedBreeds = Array.from(new Set(dogs.map(d => d.breed).filter(Boolean))).sort();
 
@@ -94,9 +86,7 @@
     });
 
     // Compose breed option names but don't override the fetched `breeds` array.
-    $: breedOptions = (breeds && breeds.length)
-        ? breeds.map(b => b.name)
-        : Array.from(new Set(dogs.map(d => d.breed).filter(Boolean))).sort();
+    $: breedOptions = displayedBreeds;
 
     // Derived filtered list used by the template
     $: filteredDogs = dogs.filter((d) => {
@@ -128,10 +118,8 @@
                 id="dog-search"
                 type="search"
                 placeholder="Search by name or breed"
-                bind:value={query}
-                class="w-full bg-white dark:bg-slate-700/60 text-slate-900 dark:text-slate-100 placeholder-slate-500 dark:placeholder-slate-400 rounded-md p-3 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
                 bind:value={search}
-                class="w-full bg-slate-700/60 text-slate-100 placeholder-slate-400 rounded-md p-3 border border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                class="w-full bg-white text-slate-900 placeholder-slate-400 rounded-md p-3 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
             />
         </div>
 
@@ -141,10 +129,9 @@
                 id="breed-select"
                 bind:value={breedFilter}
                 on:change={() => fetchDogs()}
-                class="bg-white dark:bg-slate-700/60 text-slate-900 dark:text-slate-100 rounded-md p-2 border border-slate-300 dark:border-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400"
+                class="bg-white text-slate-900 rounded-md p-2 border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-400"
             >
                 <option value="ALL">All breeds</option>
-                {#each displayedBreeds as b}
                 {#each breedOptions as b}
                     <option value={b}>{b}</option>
                 {/each}
